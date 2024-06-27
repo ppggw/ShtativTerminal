@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/backgrounds">
+        <file>hd-background.png</file>
+        <file>background2.jpg</file>
+        <file>tripod.png</file>
+        <file>triangle.png</file>
+    </qresource>
+    <qresource prefix="/"/>
+</RCC>
