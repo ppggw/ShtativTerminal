@@ -36,6 +36,8 @@ MainWindow::MainWindow(QWidget *parent)
     calibwindow = new CalibWindow();
     calibwindow->setWindowTitle("Калибровка расстояния");
 
+    levelCalibrationWindow = new levelCalibration();
+
     fullwindow = new FullWindow();
     fullwindow->setWindowState(Qt::WindowMaximized);
     fullwindow->setWindowIcon(QIcon(filePath + "/plane.png"));
@@ -67,6 +69,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, SIGNAL(sendAngleNord(float)), map, SLOT(sendAngleNord(float)));
     connect(this, SIGNAL(drawDrone(QPointF)), map, SLOT(drawDrone(QPointF)));
     connect(this, SIGNAL(enableRotateFieldOfView()), map, SLOT(enableRotateFieldOfView()));
+    connect(this, SIGNAL(drawDistance(int)), map, SLOT(drawDistance(int)));
 
     connect(UDP_Command_AirUnit, SIGNAL(send_buffer(QByteArray, ushort)), this, SLOT(UDPReady(QByteArray)));
     connect(My_FrameUpdater, SIGNAL(onSourceisAvailable()), this, SLOT(SourceIsAvailable()));
@@ -333,7 +336,6 @@ void MainWindow::SourceIsAvailable()
 
 void MainWindow::UDPReady(QByteArray buf)
 {
-//    qDebug() << buf.toHex();
     switch((uchar)buf.at(0)){
         case 0xAA:{
             switch((uchar)buf.at(1)){
@@ -417,9 +419,13 @@ void MainWindow::UDPReady(QByteArray buf)
                 uchar u;
                 receive >> u;
                 receive >> u;
-                receive >> cor_GPS_drone_y;
-                receive >> cor_GPS_drone_x;
-                emit drawDrone(QPointF{cor_GPS_drone_y, cor_GPS_drone_x});
+                receive >> gps.drone_y;
+                receive >> gps.drone_x;
+                emit drawDrone(QPointF{gps.drone_x, gps.drone_y});
+
+                int distance;
+                receive >> distance;
+                emit drawDistance(distance);
             }
         if((uchar)buf.at(1) == 0xFF){
             // сначал широта, потом долгота
@@ -427,9 +433,9 @@ void MainWindow::UDPReady(QByteArray buf)
                 uchar u;
                 receive >> u;
                 receive >> u;
-                receive >> cor_GPS_y;
-                receive >> cor_GPS_x;
-                emit setGpsTripod(QPointF{cor_GPS_x, cor_GPS_y});
+                receive >> gps.shtativ_y;
+                receive >> gps.shtativ_x;
+                emit setGpsTripod(QPointF{gps.shtativ_x, gps.shtativ_y});
 
                 QByteArray ba;
                 ba.resize(4);
@@ -592,9 +598,9 @@ void MainWindow::send_click_position_to_calib(QRect click)
 
 void MainWindow::on_engineBtn_pressed()
 {
-    if (ui->engineBtn->text() == "Включить двигатели")
-    {ui->engineBtn->setText("Выключить двигатели");}
-    else {ui->engineBtn->setText("Включить двигатели");}
+    if (ui->engineBtn->text() == "Включить слежение")
+    {ui->engineBtn->setText("Выключить слежение");}
+    else {ui->engineBtn->setText("Включить слежение");}
     sendMessage(0xaa, 0xaa, 0x01, 0x03);
 }
 
@@ -737,10 +743,6 @@ void MainWindow::on_pushBut_GPS_Nord_clicked()
     emit enableRotateFieldOfView();
 }
 
-void MainWindow::on_radioButtonShowGPS_clicked()
-{
-    sendMessage(0xaa, 0xaa, 0x01, 0x010);
-}
 
 void MainWindow::sendDateToJetson(){
     QString m_date = QDateTime::currentDateTime().toString("dd_MM_yyyy");
@@ -778,7 +780,12 @@ void MainWindow::onMapEvent()
 {
     if(map->MapEventMerlinOnCenter == 1)
     {
-        map->view->centerOn(QPointF(cor_GPS_x, cor_GPS_y));
+        map->view->centerOn(QPointF(gps.shtativ_x, gps.shtativ_y));
     }
 }
 
+
+void MainWindow::on_pushButton_clicked()
+{
+    levelCalibrationWindow->show();
+}

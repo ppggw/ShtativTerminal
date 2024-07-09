@@ -45,7 +45,8 @@ SOURCES += \
     mainwindow.cpp \
     udpclient.cpp \
     map.cpp \
-    PlaneObject.cpp
+    PlaneObject.cpp \
+    levelcalibration.cpp
 
 HEADERS += \
     MapGraphics/guts/CompositeTileSourceConfigurationWidget.h \
@@ -76,14 +77,16 @@ HEADERS += \
     mainwindow.h \
     udpclient.h \
     map.h \
-    PlaneObject.h
+    PlaneObject.h \
+    levelcalibration.h
 
 FORMS += \
     calibwindow.ui \
     fullwindow.ui \
     mainwindow.ui \
     MapGraphics/guts/CompositeTileSourceConfigurationWidget.ui \
-    map.ui
+    map.ui \
+    levelcalibration.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

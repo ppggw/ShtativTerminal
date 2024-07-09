@@ -3,9 +3,9 @@
 
 
 namespace{
-    PlaneObject *DRONE = new PlaneObject(QImage("/home/shine/QtProjects/GroundTerminal/drone.png"), QRectF(0, 0, 50, 50));
-    PlaneObject *TRIPOD = new PlaneObject(QImage("/home/shine/QtProjects/GroundTerminal/tripod.png"), QRectF(0, 0, 50, 50));
-    PlaneObject *TRIANGLE = new PlaneObject(QImage("/home/shine/QtProjects/GroundTerminal/triangle.png"), QRectF(0, 0, 111, 259));
+    PlaneObject *DRONE = new PlaneObject(QImage("/home/shine/QtProjects/ShtativTerminal/drone.png"), QRectF(0, 0, 50, 50));
+    PlaneObject *TRIPOD = new PlaneObject(QImage("/home/shine/QtProjects/ShtativTerminal/tripod.png"), QRectF(0, 0, 50, 50));
+    PlaneObject *TRIANGLE = new PlaneObject(QImage("/home/shine/QtProjects/ShtativTerminal/triangle.png"), QRectF(0, 0, 111, 259));
 //    PlaneObject *TRIPOD = new PlaneObject(QImage(":/backgrounds/tripod.png"), QRectF(0, 0, 50, 50));
 //    PlaneObject *TRIANGLE = new PlaneObject(QImage(":/backgrounds/triangle.png"), QRectF(0, 0, 111, 259));
     float angleNord = 0;
@@ -16,6 +16,7 @@ namespace{
 Map::Map(QWidget *parent) : QMainWindow(parent), ui(new Ui::Map)
 {
     ui->setupUi(this);
+    ui->DistLabel->setVisible(false);
 //    ui->DistLabel->setStyleSheet("color: rgb(50, 0, 70), background-color: rgba(255, 255, 255, 255");
 
 //            spinboxAccTime->setStyleSheet("QDoubleSpinBox{border: 1px solid gray; height: 30px;} "
@@ -53,8 +54,8 @@ Map::Map(QWidget *parent) : QMainWindow(parent), ui(new Ui::Map)
     scene->addObject(circle);
     tileConfigWidget->hide();
 
-    connect(timerDist, SIGNAL(timeout()), this, SLOT(onTimeotDist()));
-    timerDist->start(100);
+//    connect(timerDist, SIGNAL(timeout()), this, SLOT(onTimeotDist()));
+//    timerDist->start(100);
 }
 
 Map::~Map()
@@ -102,10 +103,13 @@ void Map::enableRotateFieldOfView(){
 }
 
 
-void Map::onTimeotDist()
+void Map::drawDistance(int distance)
 {
-      QString str = " ДИСТАНЦИЯ ДО ЦЕЛИ: " + QString::number(int32_t(dist_to_map)) +(" м");
-      ui->DistLabel->setText(str);
+    if(!ui->DistLabel->isVisible()){ ui->DistLabel->setVisible(true); }
+
+    QString str = " ДИСТАНЦИЯ ДО ЦЕЛИ: " + QString::number(int32_t(distance)) +(" м");
+    ui->DistLabel->setText(str);
+//      ui->DistLabel->setVisible(true);
   //    QColor BACK = QRgba(0,255,0,0);
 //      ui->DistLabel->setStyleSheet("QLabel { background-color: rgb(255,255, 255) }");
 }

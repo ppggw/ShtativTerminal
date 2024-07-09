@@ -19,12 +19,16 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 
-#include <QDialog>
 #include <vector>
+
+//#include "ui_calibwindow.h"
+
 
 namespace Ui {
 class CalibWindow;
 }
+
+
 
 class CalibWindow : public QDialog
 {
@@ -53,7 +57,6 @@ private slots:
     void on_calcBt_pressed();
 
 private:
-//    Ui::CalibWindow *ui;
     void draw();
 
 protected:

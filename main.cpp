@@ -1,6 +1,4 @@
 #include "mainwindow.h"
-#include "fullwindow.h"
-#include "calibwindow.h"
 
 #include <QApplication>
 #include <QDir>

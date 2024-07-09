@@ -383,7 +383,7 @@ void MapTileSource::setTileExpirationTime(const QString &cacheID, QDateTime expi
 QDir MapTileSource::getDiskCacheDirectory(quint32 x, quint32 y, quint8 z) const
 {
     //Q_UNUSED(y)
-    QString pathString = "/home/shine/QtProjects/GroundTerminal/GTOSM/" % QString::number(z) % "/" % QString::number(y);//QDir::homePath() % "/" % MAPGRAPHICS_CACHE_FOLDER_NAME % "/" % this->name() ;
+    QString pathString = "/home/shine/QtProjects/ShtativTerminal/GTOSM/" % QString::number(z) % "/" % QString::number(y);//QDir::homePath() % "/" % MAPGRAPHICS_CACHE_FOLDER_NAME % "/" % this->name() ;
     QDir toRet = QDir(pathString);
     if (!toRet.exists())
     {

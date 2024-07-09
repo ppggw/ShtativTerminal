@@ -1,11 +1,13 @@
 #include "calibwindow.h"
 #include "ui_calibwindow.h"
 
-CalibWindow::CalibWindow(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::CalibWindow)
+
+CalibWindow::CalibWindow(QWidget *parent): QDialog(parent), ui(new Ui::CalibWindow)
 {
     ui->setupUi(this);
+    this->setLayout(ui->gridLayout_2);
+
+    ui->gridLayout_2->setMargin(10);
 
     ui->graphicsView->setScene(new QGraphicsScene(this));
     ui->graphicsView->scene()->addItem(&pixmap);

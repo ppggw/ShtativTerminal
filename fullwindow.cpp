@@ -1,6 +1,7 @@
 #include "fullwindow.h"
 #include "ui_fullwindow.h"
 
+
 FullWindow::FullWindow(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::FullWindow)

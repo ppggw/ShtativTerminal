@@ -37,19 +37,18 @@ public:
     MapGraphicsScene * scene = new MapGraphicsScene(this);
     MapGraphicsView * view = new MapGraphicsView(scene,this);
     uint8_t MapEventMerlinOnCenter,MapEventHideInfo,MapMission;
-    QTimer* timerDist      = new QTimer(this);
     uint32_t dist_to_map;
 
 
 private slots:
     void on_MerlinToCenter_clicked();
-    void onTimeotDist();
 
 public slots:
     void setGpsTripod(QPointF);
     void sendAngleNord(float);
     void enableRotateFieldOfView();
     void drawDrone(QPointF);
+    void drawDistance(int);
 
 private:
     Ui::Map *ui;

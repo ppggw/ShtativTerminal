@@ -33,17 +33,25 @@
 #include <opencv2/highgui.hpp>
 
 #include "fullwindow.h"
-#include "ui_fullwindow.h"
 #include "udpclient.h"
 #include "calibwindow.h"
-#include "ui_calibwindow.h"
 #include "frameupdater.h"
 #include "map.h"
+#include "levelcalibration.h"
+
+#include "ui_fullwindow.h"
+#include "ui_calibwindow.h"
 
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
+
+struct GPS{
+    float shtativ_x = 0, shtativ_y = 0;
+    float drone_x = 0, drone_y = 0;
+};
+
 
 class MainWindow : public QMainWindow
 {
@@ -59,6 +67,8 @@ public:
 
     CalibWindow *calibwindow;
     bool calibwindow_flag = false;
+
+    levelCalibration* levelCalibrationWindow;
 
     cv::Mat post_process(cv::Mat &, std::vector<cv::Mat> &, const std::vector<std::string> &);
 
@@ -103,9 +113,10 @@ private slots:
     void on_setZero_clicked();
     void on_pushButGPS_clicked();
     void on_pushBut_GPS_Nord_clicked();
-    void on_radioButtonShowGPS_clicked();
     void on_pushBtn_Map_clicked();
     void onMapEvent();
+
+    void on_pushButton_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -113,6 +124,7 @@ private:
     FrameUpdater *My_FrameUpdater;
     QThread* My_FrameUpdaterThread, *map_Thread;
     Map* map;
+    GPS gps;
 
     QTimer* timerMapEvent    = new QTimer(this);
 
@@ -131,8 +143,6 @@ private:
     bool lamp1_flag, lamp2_flag;
     bool flow = false;
 
-    float cor_GPS_x = 0, cor_GPS_y = 0;
-    float cor_GPS_drone_x =0, cor_GPS_drone_y = 0;
     int SourceIsAvailableCounter = 0;
     bool EnableVideoFlag = false;
 
@@ -146,6 +156,7 @@ signals:
     void sendAngleNord(float);
     void enableRotateFieldOfView();
     void drawDrone(QPointF);
+    void drawDistance(int);
 
 public slots:
     void UDPReady(QByteArray buf);

@@ -18,9 +18,13 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 
+//#include "ui_fullwindow.h"
+
+
 namespace Ui {
 class FullWindow;
 }
+
 
 class FullWindow : public QWidget
 {
