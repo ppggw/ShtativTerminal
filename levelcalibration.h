@@ -6,6 +6,9 @@
 #include <QPalette>
 #include <QBitmap>
 #include <QPushButton>
+#include <QPainter>
+#include <QMouseEvent>
+#include <QByteArray>
 
 
 namespace Ui {
@@ -22,9 +25,22 @@ public:
 
 private:
     Ui::levelCalibration *ui;
+    QPoint m_Position;
+    QPoint pointPosition{0, 0};
 
 private slots:
     void hideWindow();
+
+public slots:
+    void RepaintPointLevel(QPoint);
+
+protected:
+    void paintEvent(QPaintEvent *event);
+    void mouseMoveEvent(QMouseEvent*);
+    void mousePressEvent(QMouseEvent*);
+
+signals:
+    void onSendUDP_PacketToAirUnit(QByteArray);
 };
 
 #endif // LEVELCALIBRATION_H

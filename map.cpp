@@ -17,11 +17,6 @@ Map::Map(QWidget *parent) : QMainWindow(parent), ui(new Ui::Map)
 {
     ui->setupUi(this);
     ui->DistLabel->setVisible(false);
-//    ui->DistLabel->setStyleSheet("color: rgb(50, 0, 70), background-color: rgba(255, 255, 255, 255");
-
-//            spinboxAccTime->setStyleSheet("QDoubleSpinBox{border: 1px solid gray; height: 30px;} "
-//                                          "QDoubleSpinBox::up-button{width: 30px; image: url(:/Back/UpArrow.png) 1; background: white; border: 1px solid gray;} "
-//                                          "QDoubleSpinBox::down-button{width: 30px; image: url(:/Back/DownArrow.png) 1; background: white; border: 1px solid gray;}");
 
     //The view will be our central widget
     this->setCentralWidget(view);
@@ -69,6 +64,7 @@ void Map::on_MerlinToCenter_clicked()
     if ( ui->MerlinToCenter->text() == "Штатив в центр")
     {
         MapEventMerlinOnCenter =1;
+//        this->view->disable();
         ui->MerlinToCenter->setText("Сброс привязки");
     }
     else

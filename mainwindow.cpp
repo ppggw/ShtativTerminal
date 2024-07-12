@@ -7,10 +7,17 @@ namespace{
 }
 
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWindow)
 {
+    qApp->installEventFilter(this);
+
+    names = {
+            {"saveairBtn", {"Начать запись", "Остановить запись"}},
+            {"neuroBtn", {"Включить нейросеть", "Выключить нейросеть"}},
+            {"engineBtn", {"Включить слежение", "Выключить слежение"}},
+            {"scanningBt", {"Включить", "Выключить"}}
+        };
+
     ptimer_MW = new QTimer();
     ptimer_MW->setInterval(40);
     ptimer_MW->start();
@@ -23,13 +30,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->graphicsView->setScene(new QGraphicsScene(this));
     ui->graphicsView->scene()->addItem(&pixmap);
-    ui->graphicsView->installEventFilter(this);
 
     ui->comboBox->addItem("Штатив");
     ui->comboBox->addItem("Видео из файла");
 
-    ui->comboBox_neuro->addItem("BRIG");
-    ui->comboBox_neuro->addItem("YOLOv4-TINY");
     ui->comboBox_neuro->addItem("YOLOv5-SMALL");
     ui->comboBox_neuro->addItem("YOLOv5-TINY");
 
@@ -58,11 +62,20 @@ MainWindow::MainWindow(QWidget *parent)
     map->moveToThread(map_Thread);
     map_Thread->start();
 
+    QList<QString> intList;
+    intList << "0" << "1" << "2" << "3" << "5" << "7" << "9";
+    ui->comboBoxSpeed->addItems(intList);
+
+    QMovie* mo = new QMovie();
+    mo->setFileName("/home/shine/QtProjects/ShtativTerminal/load_neuro.gif");
+    mo->start();
+    ui->movieLabel->setMovie(mo);
+    ui->movieLabel->hide();
+
     connect(ptimer_MW, SIGNAL(timeout()), this, SLOT(Timer_MW()));
 
     connect(fullwindow,SIGNAL(hided()), this, SLOT(show()));
     connect(fullwindow,SIGNAL(hided()), this, SLOT(hided_full()));
-
 
     connect(this, SIGNAL(onSendUDP_PacketToAirUnit(QByteArray)), UDP_Command_AirUnit, SLOT(SendUDP_Packet(QByteArray)));
     connect(this, SIGNAL(setGpsTripod(QPointF)), map, SLOT(setGpsTripod(QPointF)));
@@ -70,9 +83,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, SIGNAL(drawDrone(QPointF)), map, SLOT(drawDrone(QPointF)));
     connect(this, SIGNAL(enableRotateFieldOfView()), map, SLOT(enableRotateFieldOfView()));
     connect(this, SIGNAL(drawDistance(int)), map, SLOT(drawDistance(int)));
+    connect(this, SIGNAL(RepaintPointLevel(QPoint)), levelCalibrationWindow, SLOT(RepaintPointLevel(QPoint)));
+    connect(this, SIGNAL(lostConnectionSignal()), SLOT(lostConnection()));
+
+    connect(ui->comboBoxSpeed, SIGNAL(currentTextChanged(QString)), this, SLOT(changeSpeed(QString)));
 
     connect(UDP_Command_AirUnit, SIGNAL(send_buffer(QByteArray, ushort)), this, SLOT(UDPReady(QByteArray)));
     connect(My_FrameUpdater, SIGNAL(onSourceisAvailable()), this, SLOT(SourceIsAvailable()));
+
+    connect(levelCalibrationWindow, SIGNAL(onSendUDP_PacketToAirUnit(QByteArray)), UDP_Command_AirUnit, SLOT(SendUDP_Packet(QByteArray)));
 
     connect(calibwindow, SIGNAL(onSendUDP_PacketToMain(QByteArray)), UDP_Command_AirUnit, SLOT(SendUDP_Packet(QByteArray)));
 
@@ -125,6 +144,7 @@ void MainWindow::Timer_MW(){
 
     if (SourceIsAvailableCounter > 30 && !frame.empty())
     {
+        emit lostConnectionSignal();
         if (EnableVideoFlag == true)
         {
             EnableVideoFlag = false;
@@ -224,7 +244,7 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event)
         fullwindow_flag = true;
     }
 
-    if (object == ui->graphicsView &&  ( event->type() == QEvent::MouseButtonPress ) && source.isOpened()) {
+    if (object == ui->graphicsView &&  ( event->type() == QEvent::MouseButtonPress )) {
           // получение координат и пересчет для большого
           QPoint click_position;
           QMouseEvent *pSrcMouseEvent = static_cast<QMouseEvent *>( event );
@@ -268,47 +288,6 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event)
 //                stream << (uchar)0xff << (uchar)0x01 << (uchar)0x00 << (uchar)0x04 << (uchar)0x20 << (uchar)0x00 << (uchar)0x25;
                 emit onSendUDP_PacketToAirUnit(ba);
                 break;
-            case Qt::Key_Control:
-    //                qDebug() << "Down" << ba.toHex();
-                    stream << (uchar)0xfa << (uchar)0xce << (uchar)0x04 << (uchar)0x02 << (short)50 << (uchar)0x01;
-//                stream << (uchar)0xff << (uchar)0x01 << (uchar)0x00 << (uchar)0x00 << (uchar)0x00 << (uchar)0x00 << (uchar)0x01;
-                emit onSendUDP_PacketToAirUnit(ba);
-                break;
-            case Qt::Key_1:
-                QMessageBox::information(this, "", "Скорость двигателя: 1");
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x02 << (uchar)0x00 << (uchar)0x01;
-                emit onSendUDP_PacketToAirUnit(ba);
-                break;
-            case Qt::Key_2:
-                QMessageBox::information(this, "", "Скорость двигателя: 2");
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x02 << (uchar)0x00 << (uchar)0x02;
-                emit onSendUDP_PacketToAirUnit(ba);
-                break;
-            case Qt::Key_3:
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x02 << (uchar)0x00 << (uchar)0x03;
-                emit onSendUDP_PacketToAirUnit(ba);
-                QMessageBox::information(this, "", "Скорость двигателя: 3");
-                break;
-            case Qt::Key_5:
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x02 << (uchar)0x00 << (uchar)0x05;
-                emit onSendUDP_PacketToAirUnit(ba);
-                QMessageBox::information(this, "", "Скорость двигателя: 4");
-                break;
-            case Qt::Key_7:
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x02 << (uchar)0x00 << (uchar)0x07;
-                emit onSendUDP_PacketToAirUnit(ba);
-                QMessageBox::information(this, "", "Скорость двигателя: 5");
-                break;
-            case Qt::Key_9:
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x02 << (uchar)0x00 << (uchar)0x09;
-                emit onSendUDP_PacketToAirUnit(ba);
-                QMessageBox::information(this, "", "Скорость двигателя: 9");
-                break;
-            case Qt::Key_0:
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x02 << (uchar)0x00 << (uchar)0x00;
-                emit onSendUDP_PacketToAirUnit(ba);
-                QMessageBox::information(this, "", "Скорость двигателя: 0");
-                break;
         }
     }
 
@@ -347,19 +326,12 @@ void MainWindow::UDPReady(QByteArray buf)
                 switch((uchar)buf.at(3)){
                     case 0x00:
                     {
-                        ui->saveairBtn->setText("Начать запись");
-                        ui->saveairLineEdit->setText("Запись видео не идёт");
-                        if (lamp1_flag == true) {ui->saveairLabel->setStyleSheet("background-color: green;"); lamp1_flag = false;}
-                        else {ui->saveairLabel->setStyleSheet("background-color: white;"); lamp1_flag = true;}
-
+                        ui->saveairBtn->setText(names["saveairBtn"].first);
                         break;
                     }
                     case 0x01:
                     {
-                        ui->saveairBtn->setText("Остановить запись");
-                        ui->saveairLineEdit->setText("Запись видео идёт");
-                        if (lamp1_flag == true) {ui->saveairLabel->setStyleSheet("background-color: green;"); lamp1_flag = false;}
-                        else {ui->saveairLabel->setStyleSheet("background-color: white;"); lamp1_flag = true;}
+                        ui->saveairBtn->setText(names["saveairBtn"].second);
 
                         break;
                     }
@@ -392,12 +364,13 @@ void MainWindow::UDPReady(QByteArray buf)
             switch((uchar)buf.at(3)){
             case 0x02:
             {
-                ui->engineBtn->setText("Выключить двигатели");
-                ui->scanningBt->setText("Выключено");
+                ui->engineBtn->setText(names["engineBtn"].second);
+                ui->scanningBt->setText(names["scanningBt"].first);
                 break;
             }
             case 0x05:
             {
+                ui->movieLabel->hide();
                 ui->neuroBtn->setEnabled(true);
                 QMessageBox::information(this, "", "Успешная инициализация " + QString::fromStdString(net_name));
 
@@ -406,7 +379,7 @@ void MainWindow::UDPReady(QByteArray buf)
             case 0x04:
             {
                 ui->neuroBtn->setDisabled(true);
-                ui->neuroBtn->setText("Включить нейросеть");
+                ui->neuroBtn->setText(names["neuroBtn"].first);
                 break;
             }
             }
@@ -495,24 +468,18 @@ void MainWindow::on_initneuroBtn_pressed()
     switch(ui->comboBox_neuro->currentIndex())
     {
     case 0:
-        net_name = "yolo-brig";
-        net = 0x00;
-        break;
-    case 1:
-        net_name = "yolov4-tiny";
-        net = 0x01;
-        break;
-    case 2:
         net_name = "yolov5_s";
         net = 0x02;
         break;
-    case 3:
+    case 1:
         net_name = "yolov5_tiny";
         net = 0x03;
         break;
     }
     sendMessage(0xee, 0xee, 0x00, net);
     ui->neuroBtn->setDisabled(true);
+
+    ui->movieLabel->show();
 }
 
 
@@ -598,9 +565,15 @@ void MainWindow::send_click_position_to_calib(QRect click)
 
 void MainWindow::on_engineBtn_pressed()
 {
-    if (ui->engineBtn->text() == "Включить слежение")
-    {ui->engineBtn->setText("Выключить слежение");}
-    else {ui->engineBtn->setText("Включить слежение");}
+    if (ui->engineBtn->text() == names["engineBtn"].first)
+    {
+        ui->engineBtn->setText(names["engineBtn"].second);
+        ui->engineBtn->setStyleSheet("background-color: green;");
+    }
+    else {
+        ui->engineBtn->setText(names["engineBtn"].first);
+        ui->engineBtn->setStyleSheet("background-color: rgb(238, 238, 238)");
+    }
     sendMessage(0xaa, 0xaa, 0x01, 0x03);
 }
 
@@ -626,12 +599,12 @@ void MainWindow::on_scanningBt_pressed()
 //    else{
 //        QMessageBox::warning(this,"Ошибка", "Включите нейросеть!");
 //    }
-    if (ui->scanningBt->text() == "Выключено"){
-        ui->scanningBt->setText("Включено");
+    if (ui->scanningBt->text() == names["scanningBt"].first){
+        ui->scanningBt->setText(names["scanningBt"].second);
         ui->to_start->setEnabled(false);
     }
     else {
-        ui->scanningBt->setText("Выключено");
+        ui->scanningBt->setText(names["scanningBt"].first);
         ui->to_start->setEnabled(true);
     }
     QByteArray ba;
@@ -679,8 +652,14 @@ void MainWindow::on_calibBt_pressed()
 
 void MainWindow::on_neuroBtn_clicked()
 {
-    if (ui->neuroBtn->text() == "Включить нейросеть") {ui->neuroBtn->setText("Выключить нейросеть");}
-    else {ui->neuroBtn->setText("Включить нейросеть");}
+    if (ui->neuroBtn->text() == names["neuroBtn"].first) {
+        ui->neuroBtn->setText(names["neuroBtn"].second);
+        ui->neuroBtn->setStyleSheet("background-color: green");
+    }
+    else {
+        ui->neuroBtn->setText(names["neuroBtn"].first);
+        ui->neuroBtn->setStyleSheet("background-color: rgb(238, 238, 238)");
+    }
     sendMessage(0xee, 0xee, 0x01, 0x00);
 }
 
@@ -787,5 +766,34 @@ void MainWindow::onMapEvent()
 
 void MainWindow::on_pushButton_clicked()
 {
+    QByteArray ba;
+    QDataStream stream(&ba, QIODevice::WriteOnly);
+    stream << (uchar)0xFD;
+    stream << (uchar)0xDD;
+    stream << 0x01;
+
+    emit onSendUDP_PacketToAirUnit(ba);
+
     levelCalibrationWindow->show();
+}
+
+
+void MainWindow::changeSpeed(QString speed){
+    uchar HexSpeed = std::stoi(speed.toStdString(), 0, 16);
+
+    QByteArray ba;
+    QDataStream stream(&ba, QIODevice::WriteOnly);
+    stream << (uchar)0xfa << (uchar)0xce << (uchar)0x02 << (uchar)0x00 << HexSpeed;
+    emit onSendUDP_PacketToAirUnit(ba);
+    QMessageBox::information(this, "", "Скорость двигателя: " + speed);
+}
+
+
+void MainWindow::lostConnection(){
+    ui->neuroBtn->setStyleSheet("background-color: rgb(238, 238, 238)");
+    ui->neuroBtn->setDisabled(true);
+    ui->neuroBtn->setText(names["neuroBtn"].first);
+
+    ui->engineBtn->setStyleSheet("background-color: rgb(238, 238, 238)");
+    ui->engineBtn->setText(names["engineBtn"].first);
 }

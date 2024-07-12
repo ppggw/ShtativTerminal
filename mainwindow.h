@@ -14,6 +14,7 @@
 #include <QTime>
 #include <QTimer>
 #include <QThread>
+#include <QMovie>
 
 #include <iostream>
 #include <typeinfo>
@@ -117,6 +118,8 @@ private slots:
     void onMapEvent();
 
     void on_pushButton_clicked();
+    void changeSpeed(QString);
+    void lostConnection();
 
 private:
     Ui::MainWindow *ui;
@@ -127,6 +130,7 @@ private:
     GPS gps;
 
     QTimer* timerMapEvent    = new QTimer(this);
+    std::map<std::string, std::pair<QString, QString>> names;
 
     QGraphicsPixmapItem pixmap;
     cv::VideoCapture source;
@@ -157,6 +161,8 @@ signals:
     void enableRotateFieldOfView();
     void drawDrone(QPointF);
     void drawDistance(int);
+    void RepaintPointLevel(QPoint);
+    void lostConnectionSignal();
 
 public slots:
     void UDPReady(QByteArray buf);

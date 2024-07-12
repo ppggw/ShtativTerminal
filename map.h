@@ -52,6 +52,9 @@ public slots:
 
 private:
     Ui::Map *ui;
+
+//protected:
+//    void eventFilter(QObject *watched, QEvent *event);
 };
 
 #endif // MAP_H

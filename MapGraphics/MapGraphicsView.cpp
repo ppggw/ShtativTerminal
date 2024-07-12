@@ -581,3 +581,8 @@ void MapGraphicsView::MissionWP2(void)
 }
 
 
+void MapGraphicsView::disable(){
+
+}
+
+

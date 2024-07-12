@@ -93,7 +93,7 @@ void CalibWindow::on_pushBt_del_all_pressed()
 
 bool CalibWindow::eventFilter(QObject *object, QEvent *event)
 {
-    if (object == ui->graphicsView && (event->type() == QEvent::MouseButtonDblClick)) {
+    if (object == this->ui->graphicsView && (event->type() == QEvent::MouseButtonDblClick)) {
           // получение координат и пересчет для большого
           int frame_width = 1920;
           int frame_height = 1080;
@@ -114,63 +114,6 @@ bool CalibWindow::eventFilter(QObject *object, QEvent *event)
           else{QMessageBox::warning(this, "Предупреждение", "Недопустимая область");}
        }
 
-    if (event->type() == QEvent::KeyPress)
-    {
-        QByteArray ba;
-        QDataStream stream(&ba, QIODevice::WriteOnly);
-        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-
-        switch(keyEvent->key())
-        {
-            case Qt::Key_Up:
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x04 << (uchar)0x01 << (short)5 << (uchar)0x01;
-//                qDebug() << "Right" << ba.toHex();
-                emit onSendUDP_PacketToMain(ba);
-                break;
-            case Qt::Key_Down:
-//                qDebug() << "Left";
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x04 << (uchar)0x01 << (short)5 << (uchar)0x00;
-                emit onSendUDP_PacketToMain(ba);
-                break;
-            case Qt::Key_Right:
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x04 << (uchar)0x02 << (short)50 << (uchar)0x00;
-//                qDebug() << "Up" << ba.toHex();
-                emit onSendUDP_PacketToMain(ba);
-                break;
-            case Qt::Key_Left:
-//                qDebug() << "Down" << ba.toHex();
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x04 << (uchar)0x02 << (short)50 << (uchar)0x01;
-                emit onSendUDP_PacketToMain(ba);
-                break;
-            case Qt::Key_1:
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x02 << (uchar)0x00 << (uchar)0x01;
-                emit onSendUDP_PacketToMain(ba);
-                break;
-            case Qt::Key_2:
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x02 << (uchar)0x00 << (uchar)0x02;
-                emit onSendUDP_PacketToMain(ba);
-                break;
-            case Qt::Key_3:
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x02 << (uchar)0x00 << (uchar)0x03;
-                emit onSendUDP_PacketToMain(ba);
-                break;
-            case Qt::Key_5:
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x02 << (uchar)0x00 << (uchar)0x05;
-                emit onSendUDP_PacketToMain(ba);
-                break;
-            case Qt::Key_7:
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x02 << (uchar)0x00 << (uchar)0x07;
-                emit onSendUDP_PacketToMain(ba);
-                break;
-            case Qt::Key_8:
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x02 << (uchar)0x00 << (uchar)0x09;
-                emit onSendUDP_PacketToMain(ba);
-                break;
-        }
-    }
-
-    // false means it should be send to target also. as in , we dont remove it.
-    // if you return true , you will take the event and widget never sees it so be carefull with that.
     return false;
 }
 

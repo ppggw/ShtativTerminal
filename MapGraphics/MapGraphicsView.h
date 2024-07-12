@@ -53,6 +53,7 @@ public:
     void centerOn(const QPointF& pos);
     void centerOn(qreal longitude, qreal latitude);
     void centerOn(const MapGraphicsObject * item);
+    void disable();
 
     QPointF mapToScene(const QPoint viewPos) const;
 
