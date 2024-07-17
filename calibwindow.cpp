@@ -41,22 +41,27 @@ void CalibWindow::draw(){
 
 void CalibWindow::on_pushButton_pressed()
 {
-    if (ui->lineEdit_z->text() != "" && ui->lineEdit_disp->text() != ""){
-        ui->textEdit_data->clear();
+    if(ui->stackedWidget->currentIndex() == 0){
+        if (ui->lineEdit_z->text() != "" && ui->lineEdit_disp->text() != ""){
+            ui->textEdit_data->clear();
 
-        // для вывода введенных данных
-        if(ui->lineEdit_disp->text().toFloat() != 0 & ui->lineEdit_z->text().toFloat() != 0){
-            str_disp.push_back(ui->lineEdit_disp->text());
-            str_distance.push_back(ui->lineEdit_z->text());
-            // для последующего расчета
-            disp.push_back(ui->lineEdit_disp->text().toFloat());
-            distance.push_back(ui->lineEdit_z->text().toFloat());
+            // для вывода введенных данных
+            if(ui->lineEdit_disp->text().toFloat() != 0 & ui->lineEdit_z->text().toFloat() != 0){
+                str_disp.push_back(ui->lineEdit_disp->text());
+                str_distance.push_back(ui->lineEdit_z->text());
+                // для последующего расчета
+                disp.push_back(ui->lineEdit_disp->text().toFloat());
+                distance.push_back(ui->lineEdit_z->text().toFloat());
+            }
+            else{QMessageBox::warning(this, "Предупреждение", "Введите корректное значение разности и дальности");}
+
+            draw();
+            ui->lineEdit_z->clear();
+            ui->lineEdit_disp->clear();
         }
-        else{QMessageBox::warning(this, "Предупреждение", "Введите корректное значение разности и дальности");}
+    }
+    else{
 
-        draw();
-        ui->lineEdit_z->clear();
-        ui->lineEdit_disp->clear();
     }
 }
 
@@ -144,5 +149,17 @@ void CalibWindow::on_calcBt_pressed()
         msgBox.exec();
 
         emit SendDispBias(bias, disparity);
+    }
+}
+
+void CalibWindow::on_SwitchDistanceBtn_clicked()
+{
+    if(ui->SwitchDistanceBtn->text() == "Дальность в метрах"){
+        ui->SwitchDistanceBtn->setText("Дальность через координаты объекта");
+        ui->stackedWidget->setCurrentIndex(1);
+    }
+    else{
+        ui->SwitchDistanceBtn->setText("Дальность в метрах");
+        ui->stackedWidget->setCurrentIndex(0);
     }
 }

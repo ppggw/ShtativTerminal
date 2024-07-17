@@ -56,6 +56,8 @@ private slots:
 
     void on_calcBt_pressed();
 
+    void on_SwitchDistanceBtn_clicked();
+
 private:
     void draw();
 
