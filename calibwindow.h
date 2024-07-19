@@ -42,23 +42,21 @@ public:
     QGraphicsPixmapItem pixmap, pixmap_disp;
     std::vector<float> disp, distance;
     std::vector<QString> str_disp, str_distance;
-
-//    QPoint click_position;
     QRect click_position;
-//    cv::Mat frame;
-//    cv::Mat frame_for_disp;
+
 
 private slots:
     void on_pushButton_pressed();
     void on_pushBt_del_ind_pressed();
     void on_pushBt_del_all_pressed();
-
-
     void on_calcBt_pressed();
-
     void on_SwitchDistanceBtn_clicked();
 
+public slots:
+    void setCalibeGPSTripod(QPointF);
+
 private:
+    QPointF coorTripod = {0, 0};
     void draw();
 
 protected:

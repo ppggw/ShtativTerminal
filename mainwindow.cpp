@@ -10,7 +10,6 @@ namespace{
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWindow)
 {
     qApp->installEventFilter(this);
-
     names = {
             {"saveairBtn", {"Начать запись", "Остановить запись"}},
             {"neuroBtn", {"Включить нейросеть", "Выключить нейросеть"}},
@@ -81,6 +80,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     connect(this, SIGNAL(setGpsTripod(QPointF)), map, SLOT(setGpsTripod(QPointF)));
     connect(this, SIGNAL(sendAngleNord(float)), map, SLOT(sendAngleNord(float)));
     connect(this, SIGNAL(drawDrone(QPointF)), map, SLOT(drawDrone(QPointF)));
+    connect(this, SIGNAL(setCalibeGPSTripod(QPointF)), calibwindow, SLOT(setCalibeGPSTripod(QPointF)));
     connect(this, SIGNAL(enableRotateFieldOfView()), map, SLOT(enableRotateFieldOfView()));
     connect(this, SIGNAL(drawDistance(int)), map, SLOT(drawDistance(int)));
     connect(this, SIGNAL(RepaintPointLevel(QPoint)), levelCalibrationWindow, SLOT(RepaintPointLevel(QPoint)));
@@ -114,6 +114,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
 
     frame = cv::Mat(ui->graphicsView->height(), ui->graphicsView->width(), CV_8UC3, cv::Scalar(255, 255, 255));
     // костыль. ПО высоте не выравнивается. Мб картинку, но ресурсы чисто для qt. Конвертирование дает проблемное изображение
+    ui->comboBoxSpeed->installEventFilter(this);
 }
 
 MainWindow::~MainWindow()
@@ -249,8 +250,8 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event)
           QPoint click_position;
           QMouseEvent *pSrcMouseEvent = static_cast<QMouseEvent *>( event );
           click_position = pSrcMouseEvent->pos();
-          float coef_x = float(frame.cols) / ui->graphicsView->width();
-          float coef_y = float(frame.rows) / ui->graphicsView->height();
+          float coef_x = ( float(frame.cols) * 1920 )/( ui->graphicsView->width() * 1280 );
+          float coef_y = ( float(frame.rows) * 1080 )/( ui->graphicsView->height() * 720 );
           click_position.setX(int(click_position.x() * coef_x));
           click_position.setY(int(click_position.y() *  coef_y));
           send_click_poisition(click_position);
@@ -265,30 +266,34 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event)
         switch(keyEvent->key())
         {
             case Qt::Key_Up:
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x04 << direct_y << (short)40 << (uchar)0x01;
+                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x04 << direct_y << (short)80 << (uchar)0x01;
 //                stream << (uchar)0xff << (uchar)0x01 << (uchar)0x00 << (uchar)0x08 << (uchar)0x00 << (uchar)0x20 << (uchar)0x29;
 //                qDebug() << "Right" << ba.toHex();
                 emit onSendUDP_PacketToAirUnit(ba);
                 break;
             case Qt::Key_Down:
 //                qDebug() << "Left";
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x04 << direct_y << (short)40 << (uchar)0x00;
+                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x04 << direct_y << (short)80 << (uchar)0x00;
 //                stream << (uchar)0xff << (uchar)0x01 << (uchar)0x00 << (uchar)0x10 << (uchar)0x00 << (uchar)0x20 << (uchar)0x31;
                 emit onSendUDP_PacketToAirUnit(ba);
                 break;
             case Qt::Key_Right:
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x04 << direct_x << (short)100 << (uchar)0x01;
+                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x04 << direct_x << (short)80 << (uchar)0x01;
 //                stream << (uchar)0xff << (uchar)0x01 << (uchar)0x00 << (uchar)0x02 << (uchar)0x20 << (uchar)0x00 << (uchar)0x23;
 //                qDebug() << "Up" << ba.toHex();
                 emit onSendUDP_PacketToAirUnit(ba);
                 break;
             case Qt::Key_Left:
 //                qDebug() << "Down" << ba.toHex();
-                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x04 << direct_x << (short)100 << (uchar)0x00;
+                stream << (uchar)0xfa << (uchar)0xce << (uchar)0x04 << direct_x << (short)80 << (uchar)0x00;
 //                stream << (uchar)0xff << (uchar)0x01 << (uchar)0x00 << (uchar)0x04 << (uchar)0x20 << (uchar)0x00 << (uchar)0x25;
                 emit onSendUDP_PacketToAirUnit(ba);
                 break;
         }
+    }
+    if (event->type() == QEvent::KeyPress && object == ui->comboBoxSpeed)
+    {
+        return true;
     }
 
     return false;
@@ -409,6 +414,7 @@ void MainWindow::UDPReady(QByteArray buf)
                 receive >> gps.shtativ_y;
                 receive >> gps.shtativ_x;
                 emit setGpsTripod(QPointF{gps.shtativ_x, gps.shtativ_y});
+                emit setCalibeGPSTripod(QPointF{gps.shtativ_x, gps.shtativ_y});
 
                 QByteArray ba;
                 ba.resize(4);
@@ -607,13 +613,7 @@ void MainWindow::on_scanningBt_pressed()
         ui->scanningBt->setText(names["scanningBt"].first);
         ui->to_start->setEnabled(true);
     }
-    QByteArray ba;
-    ba.resize(4);
-    ba[0] = 0xaa;
-    ba[1] = 0xaa;
-    ba[2] = 0x01;
-    ba[3] = 0x06;
-    emit onSendUDP_PacketToAirUnit(ba);
+    sendMessage(0xaa, 0xaa, 0x01, 0x06);
 }
 
 void MainWindow::on_to_start_pressed()
@@ -786,6 +786,7 @@ void MainWindow::changeSpeed(QString speed){
     stream << (uchar)0xfa << (uchar)0xce << (uchar)0x02 << (uchar)0x00 << HexSpeed;
     emit onSendUDP_PacketToAirUnit(ba);
     QMessageBox::information(this, "", "Скорость двигателя: " + speed);
+    ui->comboBoxSpeed->setFocus(Qt::OtherFocusReason);
 }
 
 
@@ -796,4 +797,26 @@ void MainWindow::lostConnection(){
 
     ui->engineBtn->setStyleSheet("background-color: rgb(238, 238, 238)");
     ui->engineBtn->setText(names["engineBtn"].first);
+}
+
+void MainWindow::on_checkBox_clicked(bool checked)
+{
+    if(checked){
+        sendMessage(0xee, 0xee, 0x02, 0x00);
+    }
+    else{
+        sendMessage(0xee, 0xee, 0x02, 0x01);
+    }
+}
+
+
+
+void MainWindow::on_checkBox_Korel_clicked(bool checked)
+{
+    if(checked){
+        sendMessage(0xee, 0xee, 0x03, 0x00);
+    }
+    else{
+        sendMessage(0xee, 0xee, 0x03, 0x01);
+    }
 }

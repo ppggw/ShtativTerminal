@@ -82,7 +82,6 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *event);
-//    void mouseDoubleClickEvent(QMouseEvent *event);
     bool eventFilter(QObject *object, QEvent *event);
     void sendMessage(uchar, uchar, uchar, uchar);
 
@@ -121,6 +120,9 @@ private slots:
     void changeSpeed(QString);
     void lostConnection();
 
+    void on_checkBox_clicked(bool checked);
+    void on_checkBox_Korel_clicked(bool checked);
+
 private:
     Ui::MainWindow *ui;
     QTimer *ptimer_MW;
@@ -157,6 +159,7 @@ signals:
     void onSendUDP_PacketToAirUnit(QByteArray);
     void onUDPReady(QByteArray buf);
     void setGpsTripod(QPointF);
+    void setCalibeGPSTripod(QPointF);
     void sendAngleNord(float);
     void enableRotateFieldOfView();
     void drawDrone(QPointF);

@@ -1,5 +1,31 @@
 #include "calibwindow.h"
 #include "ui_calibwindow.h"
+#include "math.h"
+
+
+float calcDistanceFromGPS(QPointF coorTripod, QPointF coorObject){
+    int RADIUCE = 6372795;
+
+    // в радианах
+    float lat1 = coorTripod.x() * M_PI/180;
+    float lat2 = coorObject.x() * M_PI/180;
+    float long1 = coorTripod.y() * M_PI/180;
+    float long2 = coorObject.y() * M_PI/180;
+
+    //косинусы и синусы широт и разницы долгот
+    float cl1 = std::cos(lat1);
+    float cl2 = std::cos(lat2);
+    float sl1 = std::sin(lat1);
+    float sl2 = std::sin(lat2);
+    float delta = long2 - long1;
+    float cdelta = std::cos(delta);
+    float sdelta = std::sin(delta);
+
+    float y = std::sqrt(std::pow(cl2*sdelta,2)+std::pow(cl1*sl2-sl1*cl2*cdelta,2));
+    float x = sl1*sl2+cl1*cl2*cdelta;
+    float ad = std::atan2(y,x);
+    return ad * RADIUCE;
+}
 
 
 CalibWindow::CalibWindow(QWidget *parent): QDialog(parent), ui(new Ui::CalibWindow)
@@ -46,7 +72,7 @@ void CalibWindow::on_pushButton_pressed()
             ui->textEdit_data->clear();
 
             // для вывода введенных данных
-            if(ui->lineEdit_disp->text().toFloat() != 0 & ui->lineEdit_z->text().toFloat() != 0){
+            if(ui->lineEdit_disp->text().toFloat() >= 0 & ui->lineEdit_z->text().toFloat() >= 0){
                 str_disp.push_back(ui->lineEdit_disp->text());
                 str_distance.push_back(ui->lineEdit_z->text());
                 // для последующего расчета
@@ -61,7 +87,28 @@ void CalibWindow::on_pushButton_pressed()
         }
     }
     else{
+        if(coorTripod.x() != 0){
+            if (ui->lineEdit_Width->text() != "" && ui->lineEdit_Height->text() != "" && ui->lineEdit_disp->text().toFloat() != 0){
+                ui->textEdit_data->clear();
 
+                // для вывода введенных данных
+                if(ui->lineEdit_disp->text().toFloat() >= 0 && ui->lineEdit_Width->text().toFloat() >= 0 && ui->lineEdit_Height->text().toFloat() >= 0){
+                    str_disp.push_back(ui->lineEdit_disp->text());
+
+                    float distance_ = calcDistanceFromGPS(coorTripod, QPointF(ui->lineEdit_Width->text().toFloat(), ui->lineEdit_Height->text().toFloat()));
+
+                    str_distance.push_back(QString::number(distance_));
+                    // для последующего расчета
+                    disp.push_back(ui->lineEdit_disp->text().toFloat());
+                    distance.push_back(distance_);
+                }
+                else{QMessageBox::warning(this, "Предупреждение", "Введите корректное значение разности и дальности");}
+
+                draw();
+                ui->lineEdit_z->clear();
+                ui->lineEdit_disp->clear();
+            }
+        }
     }
 }
 
@@ -162,4 +209,9 @@ void CalibWindow::on_SwitchDistanceBtn_clicked()
         ui->SwitchDistanceBtn->setText("Дальность в метрах");
         ui->stackedWidget->setCurrentIndex(0);
     }
+}
+
+
+void CalibWindow::setCalibeGPSTripod(QPointF coor){
+    coorTripod = coor;
 }
