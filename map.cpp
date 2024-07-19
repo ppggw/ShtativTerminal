@@ -14,7 +14,7 @@ namespace{
 Map::Map(QWidget *parent) : QMainWindow(parent), ui(new Ui::Map)
 {
     ui->setupUi(this);
-    ui->DistLabel->setVisible(false);
+    ui->DistLabel->hide();
 
     //The view will be our central widget
     this->setCentralWidget(view);
@@ -99,7 +99,7 @@ void Map::enableRotateFieldOfView(){
 
 void Map::drawDistance(int distance)
 {
-    if(!ui->DistLabel->isVisible()){ ui->DistLabel->setVisible(true); }
+    if(!ui->DistLabel->isVisible()){ ui->DistLabel->show(); }
 
     QString str = " ДИСТАНЦИЯ ДО ЦЕЛИ: " + QString::number(int32_t(distance)) +(" м");
     ui->DistLabel->setText(str);

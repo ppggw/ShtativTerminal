@@ -100,7 +100,6 @@ private slots:
     void on_scanningBt_pressed();
     void on_to_start_pressed();
     void on_calibBt_pressed();
-    void writeCalibFrame(QByteArray buf);
     void draw_calib_frame(cv::Mat);
     void send_bias_disp(float, float);
 

@@ -62,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     map_Thread->start();
 
     QList<QString> intList;
-    intList << "0" << "1" << "2" << "3" << "5" << "7" << "9";
+    intList << "0" << "1" << "2" << "3" << "4" << "7" << "9";
     ui->comboBoxSpeed->addItems(intList);
 
     QMovie* mo = new QMovie();
@@ -186,6 +186,19 @@ void MainWindow::Timer_MW(){
         }
 
         if(save_source.isOpened()) {save_source.write(frame);}
+
+        if(ui->checkBox_ShowDistance->isChecked()){
+            cv::String text = "Dist = " + std::to_string(distance);
+            cv::Size textsize = cv::getTextSize(text, cv::FONT_HERSHEY_DUPLEX, 1, 2, 0);
+            cv::Scalar color = cv::Scalar(0,0,255);
+            cv::putText(frame,
+                        text,
+                        cv::Point(30, 30),
+                        cv::FONT_HERSHEY_DUPLEX,
+                        1,
+                        color,
+                        2);
+        }
 
         QImage qimg(frame.data,
                     frame.cols,
@@ -320,6 +333,7 @@ void MainWindow::SourceIsAvailable()
 
 void MainWindow::UDPReady(QByteArray buf)
 {
+//    qDebug() << buf.toHex();
     switch((uchar)buf.at(0)){
         case 0xAA:{
             switch((uchar)buf.at(1)){
@@ -337,7 +351,7 @@ void MainWindow::UDPReady(QByteArray buf)
                     case 0x01:
                     {
                         ui->saveairBtn->setText(names["saveairBtn"].second);
-
+                        ui->saveairBtn->setStyleSheet("background-color: rgb(238, 238, 238)");
                         break;
                     }
                 }
@@ -361,7 +375,13 @@ void MainWindow::UDPReady(QByteArray buf)
         break;
 
         case 0xBB:{
-            writeCalibFrame(buf);
+        QDataStream stream(buf);
+        uchar preambule;
+        stream >> preambule;
+        stream >> preambule;
+        stream >> disp;
+        stream >> distance;
+        if(calibwindow_flag == true){calibwindow->ui->lineEdit_disp->setText(QString::number(disp));}
         }
         break;
 
@@ -438,19 +458,6 @@ void MainWindow::UDPReady(QByteArray buf)
             }
         }
     }
-}
-
-
-void MainWindow::writeCalibFrame(QByteArray buf){
-    QDataStream stream(buf);
-    uchar preambule;
-    stream >> preambule;
-    stream >> preambule;
-    stream >> disp;
-    stream >> distance;
-//    ui->textEdit->append(QString::fromStdString("Disparity = " + std::to_string(disp) + " Distance = " + std::to_string(distance)));
-//            calibwindow->disparity_calib = disp;
-    if(calibwindow_flag == true){calibwindow->ui->lineEdit_disp->setText(QString::number(disp));}
 }
 
 
@@ -639,17 +646,16 @@ void MainWindow::send_bias_disp(float bias, float disparity){
 void MainWindow::on_calibBt_pressed()
 {
     if(calibwindow_flag != true){
-        if(flow == true){
+        if(flow == true && ui->neuroBtn->text() == names["neuroBtn"].first){
             calibwindow_flag = true;
             calibwindow->show();
         }
         else{
-            QMessageBox::warning(this, "Предупреждение", "Для калибровки необходимо запустить поток");
+            if(!flow){ QMessageBox::warning(this, "Предупреждение", "Для калибровки необходимо запустить поток"); }
+            if(ui->neuroBtn->text() == names["neuroBtn"].second){
+                QMessageBox::warning(this, "Предупреждение", "Для калибровки необходимо выключить нейросеть");}
         }
     }
-
-//    calibwindow_flag = true;
-//    calibwindow->show();
 }
 
 void MainWindow::on_neuroBtn_clicked()
