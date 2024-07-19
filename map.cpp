@@ -6,8 +6,6 @@ namespace{
     PlaneObject *DRONE = new PlaneObject(QImage("/home/shine/QtProjects/ShtativTerminal/drone.png"), QRectF(0, 0, 50, 50));
     PlaneObject *TRIPOD = new PlaneObject(QImage("/home/shine/QtProjects/ShtativTerminal/tripod.png"), QRectF(0, 0, 50, 50));
     PlaneObject *TRIANGLE = new PlaneObject(QImage("/home/shine/QtProjects/ShtativTerminal/triangle.png"), QRectF(0, 0, 111, 259));
-//    PlaneObject *TRIPOD = new PlaneObject(QImage(":/backgrounds/tripod.png"), QRectF(0, 0, 50, 50));
-//    PlaneObject *TRIANGLE = new PlaneObject(QImage(":/backgrounds/triangle.png"), QRectF(0, 0, 111, 259));
     float angleNord = 0;
     QPointF coorTripod;
 }

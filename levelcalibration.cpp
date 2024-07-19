@@ -9,7 +9,7 @@ levelCalibration::levelCalibration(QWidget *parent) :
     setWindowTitle("Калибровка уровня штатива");
     setWindowFlags(Qt::FramelessWindowHint | Qt::Window | Qt::WindowStaysOnTopHint);
     resize(512, 512);
-    QPixmap icon("/home/shine/QtProjects/ShtativTerminal/cs go donk 666 aim cool.png");
+    QPixmap icon(":/backgrounds/cs go donk 666 aim cool.png");
     QPalette pal = this->palette();
     pal.setBrush(QPalette::Normal, QPalette::Window, QBrush(icon));
     pal.setBrush(QPalette::Inactive, QPalette::Window, QBrush(icon));

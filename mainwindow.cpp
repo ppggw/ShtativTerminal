@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     ui->comboBoxSpeed->addItems(intList);
 
     QMovie* mo = new QMovie();
-    mo->setFileName("/home/shine/QtProjects/ShtativTerminal/load_neuro.gif");
+    mo->setFileName(":/backgrounds/load_neuro.gif");
     mo->start();
     ui->movieLabel->setMovie(mo);
     ui->movieLabel->hide();
@@ -370,7 +370,9 @@ void MainWindow::UDPReady(QByteArray buf)
             case 0x02:
             {
                 ui->engineBtn->setText(names["engineBtn"].second);
+                ui->engineBtn->setStyleSheet("background-color: green;");
                 ui->scanningBt->setText(names["scanningBt"].first);
+                ui->to_start->setEnabled(true);
                 break;
             }
             case 0x05:
@@ -619,7 +621,7 @@ void MainWindow::on_scanningBt_pressed()
 void MainWindow::on_to_start_pressed()
 {
     // полностью сбрасывает сканирование. Потом будет откатывать в 0 положение движков
-    ui->scanningBt->setText("Выключено");
+    ui->scanningBt->setText(names["scanningBt"].first);
     sendMessage(0xaa, 0xaa, 0x01, 0x07);
 }
 
@@ -797,6 +799,13 @@ void MainWindow::lostConnection(){
 
     ui->engineBtn->setStyleSheet("background-color: rgb(238, 238, 238)");
     ui->engineBtn->setText(names["engineBtn"].first);
+
+    ui->scanningBt->setText(names["scanningBt"].first);
+    ui->to_start->setEnabled(true);
+
+    ui->checkBox->setChecked(false);
+    ui->checkBox_Korel->setChecked(false);
+    ui->movieLabel->hide();
 }
 
 void MainWindow::on_checkBox_clicked(bool checked)

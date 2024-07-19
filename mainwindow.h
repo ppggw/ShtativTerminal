@@ -18,13 +18,10 @@
 
 #include <iostream>
 #include <typeinfo>
-#include <queue>
 #include <iterator>
 #include <vector>
 #include <sstream>
 #include <fstream>
-#include <iomanip>
-#include <chrono>
 
 #include "opencv2/opencv.hpp"
 #include <opencv2/core.hpp>
